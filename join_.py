@@ -1,5 +1,6 @@
 from functools import wraps
-         
+
+     
 class Column():
     def __init__(self, name, type, additinal_params, block_insert_update = True):
         self.name = name
@@ -7,7 +8,9 @@ class Column():
         self.additinal_params = additinal_params
         self.block_insert_update = block_insert_update
 
-
+    def __str__(self):
+        return self.name + ' ' + self.type + ' ' + self.additinal_params
+    
     def ToString(self, WithSQL : bool, Separator : str):
 
         result = self.name
@@ -16,15 +19,36 @@ class Column():
         result = result + Separator
         return result
     
-
+   
 class Table():
-    def __init__(self, name):
+    
+    def __init__(self, name, parent_table = None):
         self.name = name
-        self.Columns = [] 
+        self.Columns = []
+        self.parent_table = parent_table
 
     def AddColumn(self, column):
         self.Columns.append(column) 
 
+    def Initializtion(self):
+        col = None
+        aQuery = ' CREATE TABLE IF NOT EXISTS [' + self.name + '] ('
+        aQuery += ','.join(str(col) for col in self.Columns)
+        aQuery += ')'
+        if 'ID' not in self.Columns[0].name:
+            pass
+
+        if self.parent_table:
+            aQuery += ' PRIMARY KEY ( ' + self.Columns[0].name +',' + self.Columns[1].name + ')'
+            aQuery += ' KEY `idx`' + '( ' + self.Columns[1].name + ' )'
+            aQuery += ' CONSTRANT ' + '`' + self.Columns[1].name + '`' + ' FOREIGN KEY (`' +self.Columns[1].name+'`) ' + self.Columns[1].name + ') REFERENCES `' + self.parent_table.name +  '` (`ID`) ON DELETE CASCADE'
+        else:
+            aQuery += ' PRIMARY KEY (' + self.Columns[0].name +')'
+
+        if self.parent_table:
+            self.foreign_key = self.Columns[1].name
+
+        print(aQuery)
 
 def join_table(table1, table2, filter = None, order_by = None):
     query = 'SELECT * FROM ' + table1.name + ' JOIN ' + table2.name + ' ON ' + table1.name +'.' 
@@ -34,12 +58,10 @@ def join_table(table1, table2, filter = None, order_by = None):
             query += col.name
             break 
 
-    query += ' = ' + table2.name +'.' 
+    query += ' = ' + table2.name +'.'
 
-    for col in table2.Columns:
-        if 'FOREIGN KEY' in col.additinal_params:
-            query += col.name
-            break
+    if table2.parent_table:
+        query += table2.foreign_key
 
     where_parts = []
 
@@ -85,17 +107,24 @@ def join_table(table1, table2, filter = None, order_by = None):
 
 if __name__ == "__main__":
 
+
     Table_Order = Table('order')
+
     Table_Order.AddColumn(Column('ID', 'INTEGER', 'NOT NULL PRIMARY KEY AUTOINCREMENT'))
     Table_Order.AddColumn(Column('NAME', 'TEXT', 'NOT NULL'))
     Table_Order.AddColumn(Column('TIMESTAMP', 'TEXT', 'NOT NULL'))
     Table_Order.AddColumn(Column('VALUE', 'REAL', 'NOT NULL'))
 
-    Table_Order1 = Table('order1')
+    Table_Order.Initializtion()
+
+    Table_Order1 = Table('order1', Table_Order)
+
     Table_Order1.AddColumn(Column('ID', 'INTEGER', 'NOT NULL PRIMARY KEY AUTOINCREMENT'))
-    Table_Order1.AddColumn(Column('ID_key', 'INTEGER', 'FOREIGN KEY'))    
+    Table_Order1.AddColumn(Column('ID_key', 'INTEGER', 'NOT NULL'))    
     Table_Order1.AddColumn(Column('NAME', 'TEXT', 'NOT NULL'))
     Table_Order1.AddColumn(Column('VALUE', 'REAL', 'NOT NULL'))
 
-    #print(join_table(Table_Order, Table_Order1, ('VALUE__btw=2^5','NAME__gts=vlad'),('ID__asc',)))
-    print(join_table(Table_Order, Table_Order1))
+    Table_Order1.Initializtion()
+
+
+    print(join_table(Table_Order, Table_Order1, ('VALUE__btw=2^5',)))
