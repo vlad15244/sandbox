@@ -127,4 +127,4 @@ if __name__ == "__main__":
     Table_Order1.Initializtion()
 
 
-    print(join_table(Table_Order, Table_Order1, ('VALUE__btw=2^5',)))
+    print(join_table(Table_Order, Table_Order1, ('VALUE__btw=2^5', lll)))
