@@ -1,5 +1,28 @@
 from functools import wraps
-import pg8000
+import pymysql
+
+
+
+class Run_Database():
+    def __init__(self, user,password,host,database,charset = 'utf8mb4'):
+        self.user = user
+        self.password = password
+        self.host = host
+        self.database = database
+        self.charset = charset
+
+        self.connection = None
+
+
+    def connect(self):
+
+        self.connection = pymysql.connect(
+            user=self.user,
+            password=self.password,
+            host=self.host,
+            database=self.database,          
+            charset=self.charset
+        )
 
 class Column():
     def __init__(self, name, type, additional_params, block_insert_update = True):
@@ -22,17 +45,18 @@ class Column():
    
 class Table():
     
-    def __init__(self, name, parent_table = None):
+    def __init__(self, name, database_obj : Run_Database, parent_table = None):
         self.name = name
         self.Columns = []
         self.parent_table = parent_table
+        self.database_obj = database_obj
 
     def AddColumn(self, column):
         self.Columns.append(column) 
 
     def Initialization(self):
 
-        aQuery = ' CREATE TABLE IF NOT EXISTS public.' + self.name + ' ('
+        aQuery = ' CREATE TABLE IF NOT EXISTS ' + self.name + ' ('
         aQuery += ','.join(str(col) for col in self.Columns)
 
         if 'ID' not in self.Columns[0].name:
@@ -51,22 +75,15 @@ class Table():
         if self.parent_table:
             self.foreign_key = self.Columns[1].name
 
-        print(aQuery)
+        self.database_obj.connect()
 
-        connection = pg8000.connect(
-            user='postgres',
-            password='1234',
-            host='localhost',
-            database='postgres',          
-            port=5432
-        )
-
-        cursor = connection.cursor()
+        cursor = self.database_obj.connection.cursor()
         cursor.execute(aQuery)
+        cursor.close()
+        self.database_obj.connection.close()
 
-        connection.close()        
 
-
+    
 
 def join_table(table1, table2, filter = None, order_by = None):
     query = 'SELECT * FROM ' + table1.name + ' JOIN ' + table2.name + ' ON ' + table1.name +'.' 
@@ -85,7 +102,6 @@ def join_table(table1, table2, filter = None, order_by = None):
 
     if filter:
         query += ' WHERE '
-
 
         for col in table2.Columns:
             for flt in filter:
@@ -125,21 +141,25 @@ def join_table(table1, table2, filter = None, order_by = None):
 
 if __name__ == "__main__":
 
-    Table_Order = Table('orders')
+    MySQL = Run_Database('root', '1234','localhost', 'test')
 
-    Table_Order.AddColumn(Column('ID', 'SERIAL', 'NOT NULL'))
-    Table_Order.AddColumn(Column('NAME', 'TEXT', 'NOT NULL'))
-    Table_Order.AddColumn(Column('TIMESTAMP', 'TEXT', 'NOT NULL'))
+
+    Table_Order = Table('orders', MySQL)
+
+    Table_Order.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
+    Table_Order.AddColumn(Column('NAME', 'VARCHAR(40)', 'NOT NULL'))
+
 
     Table_Order.Initialization()
 
-    """Table_Order1 = Table('order1', Table_Order)
+    Table_Order1 = Table('items',MySQL, Table_Order)
 
-    Table_Order1.AddColumn(Column('ID', 'INTEGER', 'NOT NULL'))
-    Table_Order1.AddColumn(Column('ID_key', 'INTEGER', 'NOT NULL'))    
-    Table_Order1.AddColumn(Column('NAME', 'TEXT', 'NOT NULL'))
-    Table_Order1.AddColumn(Column('VALUE', 'REAL', 'NOT NULL'))
+    Table_Order1.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
+    Table_Order1.AddColumn(Column('ID_key', 'BIGINT', 'UNSIGNED NOT NULL'))    
+    Table_Order1.AddColumn(Column('NAME', 'VARCHAR(40)', 'NOT NULL'))
 
-    Table_Order1.Initialization()"""
+
+    Table_Order1.Initialization()
+
 
     
