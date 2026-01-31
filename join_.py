@@ -32,7 +32,7 @@ class Table():
 
     def Initialization(self):
 
-        aQuery = ' CREATE TABLE IF NOT EXISTS ' + self.name + ' ('
+        aQuery = ' CREATE TABLE IF NOT EXISTS public.' + self.name + ' ('
         aQuery += ','.join(str(col) for col in self.Columns)
 
         if 'ID' not in self.Columns[0].name:
@@ -57,15 +57,13 @@ class Table():
             user='postgres',
             password='1234',
             host='localhost',
-            database='postgres',
+            database='postgres',          
             port=5432
         )
 
         cursor = connection.cursor()
-
         cursor.execute(aQuery)
 
-        cursor.close()
         connection.close()        
 
 
