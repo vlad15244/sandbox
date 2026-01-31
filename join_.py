@@ -1,5 +1,6 @@
 from functools import wraps
-     
+import pg8000
+
 class Column():
     def __init__(self, name, type, additional_params, block_insert_update = True):
         self.name = name
@@ -30,7 +31,7 @@ class Table():
         self.Columns.append(column) 
 
     def Initialization(self):
-        col = None
+
         aQuery = ' CREATE TABLE IF NOT EXISTS `' + self.name + '` ('
         aQuery += ','.join(str(col) for col in self.Columns)
 
@@ -49,6 +50,21 @@ class Table():
             aQuery += ')' 
         if self.parent_table:
             self.foreign_key = self.Columns[1].name
+
+
+        connection = pg8000.connect(
+            user='postgres',
+            password='1234',
+            host='localhost',
+            database='postgres',
+            port=5432
+        )
+        cursor = connection.cursor()
+
+        cursor.execute(aQuery)
+
+        cursor.close()
+        connection.close()        
 
         print(aQuery)
 
@@ -109,7 +125,6 @@ def join_table(table1, table2, filter = None, order_by = None):
 
 if __name__ == "__main__":
 
-
     Table_Order = Table('order')
 
     Table_Order.AddColumn(Column('ID', 'INTEGER', 'NOT NULL AUTO_INCREMENT'))
@@ -127,5 +142,4 @@ if __name__ == "__main__":
 
     Table_Order1.Initialization()
 
-
-    print(join_table(Table_Order, Table_Order1, ('VALUE__btw=2^5',)))
+    
