@@ -32,7 +32,7 @@ class Table():
 
     def Initialization(self):
 
-        aQuery = ' CREATE TABLE IF NOT EXISTS `' + self.name + '` ('
+        aQuery = ' CREATE TABLE IF NOT EXISTS ' + self.name + ' ('
         aQuery += ','.join(str(col) for col in self.Columns)
 
         if 'ID' not in self.Columns[0].name:
@@ -46,11 +46,12 @@ class Table():
             aQuery += ')' 
         else:
             aQuery += ','            
-            aQuery += ' PRIMARY KEY (`' + self.Columns[0].name +'`)'
+            aQuery += ' PRIMARY KEY (' + self.Columns[0].name +')'
             aQuery += ')' 
         if self.parent_table:
             self.foreign_key = self.Columns[1].name
 
+        print(aQuery)
 
         connection = pg8000.connect(
             user='postgres',
@@ -59,6 +60,7 @@ class Table():
             database='postgres',
             port=5432
         )
+
         cursor = connection.cursor()
 
         cursor.execute(aQuery)
@@ -66,7 +68,7 @@ class Table():
         cursor.close()
         connection.close()        
 
-        print(aQuery)
+
 
 def join_table(table1, table2, filter = None, order_by = None):
     query = 'SELECT * FROM ' + table1.name + ' JOIN ' + table2.name + ' ON ' + table1.name +'.' 
@@ -125,21 +127,21 @@ def join_table(table1, table2, filter = None, order_by = None):
 
 if __name__ == "__main__":
 
-    Table_Order = Table('order')
+    Table_Order = Table('orders')
 
-    Table_Order.AddColumn(Column('ID', 'INTEGER', 'NOT NULL AUTO_INCREMENT'))
+    Table_Order.AddColumn(Column('ID', 'SERIAL', 'NOT NULL'))
     Table_Order.AddColumn(Column('NAME', 'TEXT', 'NOT NULL'))
     Table_Order.AddColumn(Column('TIMESTAMP', 'TEXT', 'NOT NULL'))
 
     Table_Order.Initialization()
 
-    Table_Order1 = Table('order1', Table_Order)
+    """Table_Order1 = Table('order1', Table_Order)
 
-    Table_Order1.AddColumn(Column('ID', 'INTEGER', 'NOT NULL AUTO_INCREMENT'))
+    Table_Order1.AddColumn(Column('ID', 'INTEGER', 'NOT NULL'))
     Table_Order1.AddColumn(Column('ID_key', 'INTEGER', 'NOT NULL'))    
     Table_Order1.AddColumn(Column('NAME', 'TEXT', 'NOT NULL'))
     Table_Order1.AddColumn(Column('VALUE', 'REAL', 'NOT NULL'))
 
-    Table_Order1.Initialization()
+    Table_Order1.Initialization()"""
 
     
