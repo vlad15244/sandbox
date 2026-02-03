@@ -1,15 +1,20 @@
 from functools import wraps
 import pymysql
+import abstarct_factory
 
 
-
+"""OBSOLETE"""
 class Run_Database():
-    def __init__(self, user,password,host,database,charset = 'utf8mb4'):
+
+    def __init__(self, user:str,password:str,host:str,database:str,charset = 'utf8mb4'):
+        """Параметры подключения к БД"""
         self.user = user
         self.password = password
         self.host = host
         self.database = database
         self.charset = charset
+
+
 
         self.connection = None
 
@@ -45,11 +50,10 @@ class Column():
    
 class Table():
     
-    def __init__(self, name, database_obj : Run_Database, parent_table = None):
+    def __init__(self, name):
         self.name = name
         self.Columns = []
-        self.parent_table = parent_table
-        self.database_obj = database_obj
+        self.parent_table = None        
 
 
     def __str__(self):
@@ -58,7 +62,7 @@ class Table():
     def AddColumn(self, column):
         self.Columns.append(column) 
 
-    def Initialization(self):
+    def Initialization(self) -> str:
 
         aQuery = ' CREATE TABLE IF NOT EXISTS ' + self.name + ' ('
         aQuery += ','.join(str(col) for col in self.Columns)
@@ -79,12 +83,7 @@ class Table():
         if self.parent_table:
             self.foreign_key = self.Columns[1].name
 
-        self.database_obj.connect()
-
-        cursor = self.database_obj.connection.cursor()
-        cursor.execute(aQuery)
-        cursor.close()
-        self.database_obj.connection.close()
+        return aQuery
 
 
     def insert_one(self, value : dict) -> bool:
@@ -111,13 +110,13 @@ class Table():
         aQuery += aCol + ') VALUES ('
         aQuery += aVal +');'
 
-        self.database_obj.connect()
+
 
         cursor = self.database_obj.connection.cursor()
         cursor.execute(aQuery, (value,))
         self.database_obj.connection.commit()
 
-    def insert_many(self, value : dict) -> bool:
+    def insert_many(self, value : dict) -> str:
 
         aQuery = 'INSERT INTO ' + self.name + ' ('
         if not value:
@@ -141,11 +140,11 @@ class Table():
         aQuery += aCol + ') VALUES ('
         aQuery += aVal +');'
 
-        self.database_obj.connect()
+        return aQuery
 
-        cursor = self.database_obj.connection.cursor()
-        cursor.executemany(aQuery, (value))
-        self.database_obj.connection.commit()
+
+
+
 
     def select_all(self) -> dict:
 
@@ -178,8 +177,6 @@ class Table():
                 where_parts.append(f"{before} <= '{after1}'")
 
         aQuery += ' , '.join(where_parts)
-
-        self.database_obj.connect()
 
         cursor = self.database_obj.connection.cursor()
         cursor.execute(aQuery)
@@ -236,7 +233,7 @@ class Table():
                             order_parts.append(f"{col.name} DSC")
 
         query += ' , '.join(order_parts) 
-        self.database_obj.connect()
+
         cursor = self.database_obj.connection.cursor()
         cursor.execute(query)
 
@@ -245,17 +242,23 @@ class Table():
 
 
 if __name__ == "__main__":
-
-    MySQL = Run_Database('root', '1234','localhost', 'test')
-
-    Table_Order = Table('orders', MySQL)
+    Table_Order = Table('orders')
 
     Table_Order.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
     Table_Order.AddColumn(Column('NAME', 'VARCHAR(40)', 'NOT NULL'))
 
-    Table_Order.Initialization()
+    factory = abstarct_factory.Mysql_Factory()
 
-    Table_Order.select_filter(('ID__le=2',))
+    db = factory.create_db()
+
+    db.connect('root', '1234','localhost', 'test', Table_Order)
+    db.create()
+
+    db.insert(('fdgdfgdfg',))
+    
+    db.dissconnect()
+
+    """Table_Order.select_filter(('ID__le=2',))
     Table_Order1 = Table('items',MySQL, Table_Order)
 
     Table_Order1.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
@@ -264,4 +267,4 @@ if __name__ == "__main__":
 
 
     Table_Order1.Initialization()
-    print(Table_Order1.join_table(('ID__eq=2',)))
+    print(Table_Order1.join_table(('ID__eq=2',)))"""
