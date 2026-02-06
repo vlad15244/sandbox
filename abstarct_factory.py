@@ -4,18 +4,35 @@ from join_ import Column, Table
 
 class Database(ABC):
     @abstractmethod
-
     def __init__(self):
         pass
+
+    @abstractmethod    
     def connect(self):
         pass
+
+    @abstractmethod    
     def dissconnect(self):
         pass
 
-    def insert(self):
+    @abstractmethod
+    def insert_many(self):
         pass
 
+    @abstractmethod
     def create(self):
+        pass
+
+    @abstractmethod
+    def select_all(self):
+        pass
+
+    @abstractmethod
+    def delete(self):
+        pass
+    
+    @abstractmethod
+    def count(self):
         pass
 
 
@@ -31,7 +48,8 @@ class Mysql(Database):
         self.password = password
         self.host = host
         self.database = database
-        self.charset = charset    
+        self.charset = charset
+        self.is_connected : bool 
 
 
         try:
@@ -42,7 +60,8 @@ class Mysql(Database):
             database=self.database,          
             charset=self.charset
         )
-            print(f"Соединение с сервером установлено: {self.host}")             
+            print(f"Соединение с сервером установлено: {self.host}") 
+            self.is_connected = True            
         except Exception as e:
             print(f"Произошла ошибка: {e}")
 
@@ -50,6 +69,10 @@ class Mysql(Database):
     def dissconnect(self):
         try:
             self.connection.close()
+
+            if self.is_connected:
+                self.is_connected = False
+
             print(f"Завершено соединение с сервером: {self.host}")             
         except Exception as e:
             print(f"Произошла ошибка: {e}")
@@ -115,9 +138,42 @@ class Mysql(Database):
         cursor.executemany(aQuery,value)
         self.connection.commit() 
         cursor.close()
-        return aQuery  
+        return aQuery
 
-        
+    def delete(self, table, id = 0):
+        aQuery = 'DELETE FROM ' + str(table)
+        if id != 0:
+            aQuery  += ' WHERE ID =' + str(id)
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(aQuery)
+            self.connection.commit() 
+
+            cursor.close()
+            return cursor.fetchall()
+
+        except Exception as e:
+            print(aQuery)
+            print(f"Ошибка работы с БД {e}") 
+
+
+    def count(self, table):
+        aQuery = 'SELECT COUNT(*) FROM' + str(table)
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(aQuery)
+            self.connection.commit() 
+
+            cursor.close()
+            return cursor.fetchall()
+
+        except Exception as e:
+            print(aQuery)
+            print(f"Ошибка работы с БД {e}")              
+
+
 class Mssql(Database):
     def connect(self):
         """need a realization"""
