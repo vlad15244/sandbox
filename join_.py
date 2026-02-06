@@ -1,7 +1,5 @@
 from functools import wraps
 import pymysql
-import abstarct_factory
-
 
 """OBSOLETE"""
 class Run_Database():
@@ -58,6 +56,9 @@ class Table():
 
     def __str__(self):
         return self.name
+    
+    def getcolumns(self):
+        return ','.join(str(col) for col in self.Columns)
 
     def AddColumn(self, column):
         self.Columns.append(column) 
@@ -242,7 +243,8 @@ class Table():
 
 
 if __name__ == "__main__":
-    Table_Order = Table('orders')
+    pass
+""" Table_Order = Table('orders')
 
     Table_Order.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
     Table_Order.AddColumn(Column('NAME', 'VARCHAR(40)', 'NOT NULL'))
@@ -258,7 +260,7 @@ if __name__ == "__main__":
     
     db.dissconnect()
 
-    """Table_Order.select_filter(('ID__le=2',))
+    Table_Order.select_filter(('ID__le=2',))
     Table_Order1 = Table('items',MySQL, Table_Order)
 
     Table_Order1.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
