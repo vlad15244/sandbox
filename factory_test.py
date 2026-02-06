@@ -4,7 +4,15 @@ from abstarct_factory import Database, Mysql, Database_Factory, Mysql_Factory, M
 from join_ import Column, Table
 
 class TestTable:
-    def test_table_init(self, test_table):
+
+    def test_table_init(self):
+        test = Table('orders')
+        assert test.name == 'orders', "Задано имя"
+        assert test.Columns == [], "Непустые колонки у созданной таблицы" 
+        assert str(test) == 'orders', "Задано имя"   
+
+
+    def test_eq_table(self, test_table):
         test = Table('orders')
 
         test.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
@@ -12,7 +20,21 @@ class TestTable:
 
         assert test == test_table, "Созданная таблица не соотвествует тестируемой"
 
+        test1 = Table('orders1')
 
+        test1.AddColumn(Column('ID', 'BIGINT', 'UNSIGNED NOT NULL AUTO_INCREMENT'))
+        test1.AddColumn(Column('TEXT', 'VARCHAR(40)', 'NOT NULL'))
+
+        assert test1 != test_table, "Созданная таблица соотвествует тестируемой"
+
+
+    def test_getcolumns(self):
+
+        table = Table('users')
+        table.AddColumn(Column('id', 'INT', ''))
+        table.AddColumn(Column('name', 'TEXT', ''))
+        assert table.getcolumns() == 'id INT ,name TEXT ', 'Не корректная привязка полей'
+     
 class TestAbstractClass:
     """Проверяем, что это абстрактные классы"""
     def test_cannot_inmplements_db(self):
@@ -174,4 +196,3 @@ class TestMysql:
             pytest.fail(f"Ошибка : {e}")
         except ConnectionError as e:
             pytest.fail(f"Ошибка : {e}")
-      
