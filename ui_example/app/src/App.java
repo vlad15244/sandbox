@@ -1,14 +1,10 @@
-import java.awt.*;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 
 public class App {
     public static void main(String[] args) {
-
         ActionHandler action = new ActionHandler();
         // Создание окна (Frame)
         JFrame frame = new JFrame("Пример Приложения");
@@ -20,30 +16,17 @@ public class App {
 
         // Создание панели и компонентов
         JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout());
-
-        JLabel label = new JLabel("Привет, VS Code!");
+        panel.setLayout(null);
+        panel.setBounds(0, 0, 800, 480); // x, y, width, height
         JButton button = new JButton("Нажми меня");
-        button.setBounds(50, 30, 120, 30); 
-        JButton button1 = new JButton("Это новая кнопка");
-
-        // Добавление компонентов на панель
-        panel.add(label);
+        button.setBounds(10, 10, 120, 30);
+        JLabel label = new JLabel("Привет, VS Code!");
+        label.setBounds(150, 10, 120, 30);
+        button.addActionListener(e-> action.data_bind(label));
         panel.add(button);
-        panel.add(button1);
-        button.addActionListener(e -> action.handle());
-        // Данные и заголовки
-        String[] columns = {"ID", "Имя", "Возраст"};
-        Object[][] data = {
-            {"1", "Алексей", "25"},
-            {"2", "Мария", "30"},
-            {"3", "Иван", "22"}
-        };
+        panel.add(label);        
 
-        // Создание модели и таблицы
-        DefaultTableModel model = new DefaultTableModel(data, columns);
-        JTable table = new JTable(model);
-        panel.add(table);      
+    
         // Добавление панели в окно
         frame.add(panel);
         // Отображение окна
@@ -56,8 +39,10 @@ class ActionHandler {
         System.out.println("Действие из другого класса");
     }
 
-    public void data_bind(){
-        System.out.println("Заполнение таблицы данными"); 
+    public void data_bind(JLabel label){
+
+        label.setText("Изменено из метода");
+        System.out.println("Пример изменения текста"); 
              
     }
 }
