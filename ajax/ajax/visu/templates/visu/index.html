@@ -1,0 +1,29 @@
+<button id="submitBtn">Отправить</button>
+<p id="result"></p>
+<script>
+document.getElementById('submitBtn').addEventListener('click', function() {
+
+    // Использование Fetch API (современный AJAX) [10]
+    fetch('/ajax_ex/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        // Проверяем статус ответа
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        // Парсим JSON из ответа
+        return response.json();
+    })
+    .then(data => {
+        // Обновляем содержимое элемента с результатом
+        console.log(data[`system`]);
+        document.getElementById('result').innerText = data[`system`] + data[`disks`];
+    })
+
+
+});
+</script>
