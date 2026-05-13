@@ -22,5 +22,8 @@ from visu import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('index/', views.index, name = 'index'),  
-    path('ajax_ex/', views.ajax_ex, name = 'ajax_ex'),        
+    path('ajax_ex/', views.MyView.as_view(), name = 'ajax_ex'),
+    path('ajax_ex_plus/', views.ajax_ex_plus, name = 'ajax_ex_plus'),
+    path('ajax_ex_minus/', views.ajax_ex_minus, name = 'ajax_ex_plus'),
+    path('ajax_runtime/', views.Runtime.as_view(), name = 'ajax_runtime'),                    
 ]

@@ -1,7 +1,85 @@
 <button id="submitBtn">Отправить</button>
+<button id="plusBtn">+</button>
+<button id="minusBtn">-</button>
+<input id="text" type="text">
 <p id="result"></p>
+<p id="counter">1</p>
+<p id="runtime">1</p>
+<p id="value">1</p>
 <script>
+
+
+document.getElementById('plusBtn').addEventListener('click', function(){
+
+    const counter_page = document.getElementById('counter');
+
+    fetch('/ajax_ex_plus/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body : JSON.stringify({"current_page" : counter_page.textContent})
+    })
+    .then(response => {
+        // Проверяем статус ответа
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        // Парсим JSON из ответа
+        return response.json();
+    })
+    .then(data => {
+        // Обновляем содержимое элемента с результатом
+        counter_page.innerText = data[`new_page`];
+    })    
+});
+
+
+document.getElementById('minusBtn').addEventListener('click', function(){
+
+    const counter_page = document.getElementById('counter');
+
+    fetch('/ajax_ex_minus/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body : JSON.stringify({"current_page" : counter_page.textContent})
+    })
+    .then(response => {
+        // Проверяем статус ответа
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        // Парсим JSON из ответа
+        return response.json();
+    })
+    .then(data => {
+        // Обновляем содержимое элемента с результатом
+        counter_page.innerText = data[`new_page`];
+    })    
+});
+
+
+
 document.getElementById('submitBtn').addEventListener('click', function() {
+
+    class User {
+        constructor(name){
+            this.name = name;
+            this.age = 15;
+        }
+
+        toJSON(){
+            return {name : this.name, age : this.age}
+
+        }
+    }
+
+
+    const user1 = new User("Example");
+    const text = document.getElementById("text");
+
 
     // Использование Fetch API (современный AJAX) [10]
     fetch('/ajax_ex/', {
@@ -9,6 +87,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
         headers: {
             'Content-Type': 'application/json',
         },
+        body : JSON.stringify(user1)
     })
     .then(response => {
         // Проверяем статус ответа
@@ -21,9 +100,42 @@ document.getElementById('submitBtn').addEventListener('click', function() {
     .then(data => {
         // Обновляем содержимое элемента с результатом
         console.log(data[`system`]);
-        document.getElementById('result').innerText = data[`system`] + data[`disks`];
+        document.getElementById('result').innerText = data[`system`] + data[`disks`] + data[`name`] + data[`age`];
     })
 
 
 });
+
+
+async function fetchData() {
+    try {
+        const response = await fetch('/ajax_runtime/');
+
+        // Проверяем статус ответа
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        updateDOM(data);
+    } catch (error) {
+        console.error('Ошибка при получении данных:', error);
+    }
+}
+function updateDOM(data) {
+    const timestampElement = document.getElementById('runtime');
+    const valueElement = document.getElementById('value');
+
+    if (timestampElement) {
+        timestampElement.textContent = new Date(data.timestamp).toLocaleString();
+    }
+
+    if (valueElement) {
+        valueElement.textContent = data.value;
+    }
+
+}
+
+const intervalId = setInterval(fetchData, 5000);
 </script>
