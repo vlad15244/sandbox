@@ -9,8 +9,9 @@ while True:
             content = file.read()
             ATTEMP_COUNTER += 1
             print(f"Попытка {ATTEMP_COUNTER}")
-            json_content = json.loads(content)
-            print(json_content)
+            """json_content = json.loads(content)
+            print(json_content)"""
+            print(content)
 
 
             time.sleep(5)            
