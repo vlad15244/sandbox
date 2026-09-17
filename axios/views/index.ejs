@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Пример с Axios</title>
+    <!-- Подключаем Axios через CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Запрос на клиенте</h1>
+    <button id="load-btn">Загрузить данные</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('load-btn').addEventListener('click', () => {
+            axios.get('http://localhost:3000/api/example')
+                .then(response => {
+                    document.getElementById('result').innerText = JSON.stringify(response.data);
+                })
+                .catch(error => console.error(error));
+        });
+    </script>
+</body>
+</html>
